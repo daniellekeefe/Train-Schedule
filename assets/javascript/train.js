@@ -33,51 +33,64 @@ const destination  = $('#destination-input').val().trim();
 let trainTime = $('#first-train-input').val().trim();
 let trainFreq = $('#frequency-input').val().trim();
 
+//Variable for new train, this is exactly what is represented in FB
 let newTrain={
   name: trainName,
   dest: destination,
   time: trainTime,
   freq: trainFreq
 };
+
+//push to details above to FB
 database.ref().push(newTrain);
 
+//parse the time incriments of the trains
 trainFreq = parseInt(trainFreq);
+
 //consolelog everything!
-  console.log("Name/Place/Time/Frequency: " + trainName + "|" + destination + "|" + trainTime + "|" + trainFreq);
-
-  var firstTimeConverted = moment(trainTime, "HH:mm").subtract(1, "years");
-  console.log("TIME CONVERTED: " + firstTimeConverted);
-    
-  var diffTime = moment.duration(moment().diff(moment(trainTime, "HH:mm")), 'milliseconds').asMinutes();
-    
-  console.log("DIFFERENCE IN TIME: " + diffTime);
-
-  var timeRemaining = trainFreq - (Math.floor(diffTime) % trainFreq);
-  console.log(timeRemaining);
-
-  var nextTrain = diffTime > 0 ? moment().add(timeRemaining, 'minutes' ) : moment(trainTime, "HH:mm") ;
-  console.log("ARRIVAL TIME: " + moment(nextTrain).format("HH:mm"));
-  
-  var minTilTrain = Math.ceil(moment.duration(moment(nextTrain).diff(moment()), 'milliseconds').asMinutes());
-  console.log("MINUTES TILL TRAIN: " + minTilTrain);
-
-let markup = "<tr><td>" + trainName + "</td><td>" + destination + "</td><td>" + trainFreq + "</td><td>" + (nextTrain).format("hh:mm a") + "</td><td>" + minTilTrain + "</td></tr>";
-            $("table tbody").append(markup);
-
-
-
-
-
-
+console.log("Name/Place/Time/Frequency: " + trainName + "|" + destination + "|" + trainTime + "|" + trainFreq);
 alert("train successfully ADDED");
 //data from the input fields
 $('#train-name-input').val('');
 $('#rdestination-input').val('');
 $('#first-train-input').val(''); 
 $('#frequency-input').val('');
+//first train time, get prepared for calculations!
+})
+database.ref().on("child_added", function (childSnapshot) {
+  console.log(childSnapshot)
+  console.log(childSnapshot.val())
+//});
+let eachTrain= childSnapshot.val()
+//let
+
+  
+  var firstTimeConverted = moment(eachTrain.time, "HH:mm").subtract(1, "years");
+  console.log("TIME CONVERTED: " + firstTimeConverted);
+    
+  var diffTime = moment.duration(moment().diff(moment(eachTrain.time, "HH:mm")), 'milliseconds').asMinutes();
+  console.log("DIFFERENCE IN TIME: " + diffTime);
+
+  var timeRemaining = eachTrain.freq - (Math.floor(diffTime) % eachTrain.freq);
+  console.log(timeRemaining);
+
+//if statement, greater than zero calculate time till next train arrival time
+  var nextTrain = diffTime > 0 ? moment().add(timeRemaining, 'minutes' ) : moment(eachTrain.time, "HH:mm") ;
+  console.log("ARRIVAL TIME: " + moment(nextTrain).format("HH:mm"));
+  
+  var minTilTrain = Math.ceil(moment.duration(moment(nextTrain).diff(moment()), 'milliseconds').asMinutes());
+  console.log("MINUTES TILL TRAIN: " + minTilTrain);
+
+let markup = "<tr><td>" + eachTrain.name + "</td><td>" + eachTrain.dest + "</td><td>" + eachTrain.freq + "</td><td>" + (nextTrain).format("hh:mm a") + "</td><td>" + minTilTrain + "</td></tr>";
+            $("table tbody").append(markup);
+
+           
+        
+
+
+
 
 
 
 })
-
 });
